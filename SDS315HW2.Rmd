@@ -1,0 +1,173 @@
+---
+title: "SDS315HW2"
+author: "Max Allen"
+date: "2024-01-24"
+output: html_document
+---
+Max Allen
+mca2773
+Github ->  https://github.com/mallen17/SDS315HW2
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+# Problem 1
+```{r echo=FALSE, results=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(tidyverse)
+library(ggplot2)
+profs = read_csv("profs.csv")
+
+```
+
+## Part A
+```{r echo=FALSE, error=FALSE}
+ggplot(profs) + geom_histogram(aes(eval), col="white", fill="seagreen") + labs(title = "Distibution of Eval Score")
+```
+
+This histogram displays the distribution of the eval score as skewed left with a minimum of `r min(profs$eval)`.
+
+## Part B
+```{r echo=FALSE}
+ggplot(profs) + geom_boxplot(aes(x=eval, fill=native)) + coord_flip() + labs(title = "Eval Distribution by Nativity of Professor")
+```
+
+Two boxplots next to each other show the differences in eval scores based on whether or not the professor is a native English speaker. There does appear to be a significant difference between the two.
+
+## Part C
+```{r echo=FALSE}
+ggplot(profs) + geom_histogram(aes(eval), col='white') + facet_wrap(~gender, nrow = 2) + labs(title = "Eval Distribution by Gender of Professor")
+```
+
+These two histograms compare eval scores by the gender of the professor. There doesn't appear to be an important distinction between these two, but it appears that there are a lot more male professors.
+
+## Part 4
+```{r echo=FALSE}
+ggplot(profs) + geom_point(aes(x=beauty, y=eval), pch=20, col='red') + labs(title = "Eval Score Against  Beauty Rating")
+```
+
+This scatterplot compares eval score to physical attractiveness in a professor. There appears to be a very low level of correlation between the two, `r round(cor(profs$eval, profs$beauty), 2)`.
+
+
+# Problem 2
+
+```{r echo=FALSE, include=FALSE}
+bike = read_csv("bikeshare.csv")
+```
+
+## Part A
+
+```{r echo=FALSE}
+bike %>% 
+  group_by(hr) %>% 
+  summarize(mean_hourly_rentals = mean(total)) %>% 
+  ggplot() + geom_line(aes(x=hr, y=mean_hourly_rentals)) + labs(title = "Average Bikeshare Rentals Throughout The Day", x = "Time of Day (0 = 12AM)", y = "Average Rentals")
+```
+
+This graph shows a pretty interesting relationship between bike rentals and the time of day. There are two clear modes at 8AM and 5PM which likely signify commuters going to or leaving work.
+
+## Part B
+
+```{r echo=FALSE}
+bike %>% 
+  group_by(hr, workingday) %>% 
+  summarize(mean_hourly_rentals = mean(total)) %>% 
+  ggplot() + geom_line(aes(x=hr, y=mean_hourly_rentals)) + labs(title = "Average Bikeshare Rentals Throughout The Day", x = "Time of Day (0 = 12AM)", y = "Average Rentals") + facet_wrap(~workingday, nrow = 2)
+```
+
+Now, investigating this relationship further, we see that workdays(1) explain this pattern of peaks at 8AM and 5PM as the non-workdays(0) show a more uniform distribution of bike rentals throughout the day.
+
+## Part C
+
+```{r echo=FALSE}
+bike %>% 
+  group_by(hr, workingday, weathersit) %>% 
+  summarize(mean_hourly_rentals = mean(total)) %>% 
+  filter(hr == 9) %>% 
+  ggplot() + geom_col(aes(x=weathersit, y=mean_hourly_rentals)) + facet_grid(~workingday) + labs(title="Average Ridership at 9AM by Weather Conditions on Type of Day", y="Average Rentals", x="Weather Situation")
+```
+
+This graph investigates the working day relationship with the factor of weather. 1 is clear, 2 is misty, and 3 is light to medium precipitation. There appears to be less of a difference between 9AM rentals, at least, on misty mornings for workdays. I would assume that this is because commuters still need to get to work despite the semi-problematic weather conditions, however, rain is a bit more of an issue.
+
+
+# Problem 3
+
+```{r echo=FALSE, include=FALSE}
+metro = read_csv("capmetro_UT.csv")
+```
+
+## Part A
+
+```{r echo=FALSE}
+metro %>% 
+  group_by(hour_of_day, day_of_week, month) %>% 
+  summarize(avg_boarding = mean(boarding)) %>% 
+  ggplot() + geom_line(aes(x=hour_of_day, y=avg_boarding, col=month)) + facet_grid(~day_of_week) + labs(title="Average Metro Boarding by Hour of Day", x="Hour (0 = 12AM)", y="Average Metro Boards")
+```
+
+These graphs show the average UT metro use for months and days and hours in the fall semester. The peak boarding hours appear to be generally similar for weekdays with a slight decline as the week goes on. Weekends are significantly lower than all weekdays. Mondays in September appear to be abnormally lower than the rest of the months which I would assume to be due to the fact that Labor day falls in that scope which leads to a lack of school and therefor riders. In November you can also see a drop in ridership on Wed-Fri which is likely attributed to the Thanksgiving break, which in 2018 was limited to only those three days.
+
+## Part B
+
+```{r echo=FALSE}
+metro %>% 
+  group_by(temperature, boarding, hour_of_day, weekend) %>% 
+  ggplot() + geom_point(aes(x=temperature, y=boarding, col=weekend), pch=20) +   facet_wrap(~hour_of_day)
+```
+
+
+These plots display the relationship between temperature and boarding of the UT CapMetro. Comparing it to whether or not its a weekday shows that boarding rates are much higher on weekdays. When holding factors like weekday status and hour of the day constant, we see that there does not appear to be a valuable connection between boarding rates and temperature. I would infer that this is due to the fact that students need to get to school no matter what the weather entails.
+
+
+# Problem 4
+
+```{r echo=FALSE, include=FALSE}
+billboard = read_csv("billboard.csv")
+library(kableExtra)
+```
+
+## Part A
+
+```{r echo=FALSE}
+clean_billboard = billboard %>% 
+  group_by(performer, song) %>% 
+  summarize(count = n()) 
+clean_billboard %>% 
+  arrange(desc(count)) %>% 
+  head(10)
+```
+
+This table shows the top 10 songs that have spent the most weeks on the billboard top 100 songs from 1958-2021.
+
+## Part B
+
+```{r echo=FALSE}
+new_bb = billboard %>% 
+  group_by(performer, song, year) %>% 
+  summarize() %>% 
+  filter(year > 1958 & year < 2021) %>% 
+  unique() %>% 
+  group_by(year) %>% 
+  summarize(unique = n())
+
+new_bb %>% 
+  ggplot() + geom_line(aes(x=year, y=unique)) + labs(title="Unique Top 100 Billboard Songs Over The Years", y="Number of Unique Songs")
+```
+
+This figure details the trend of unique songs appearing on the top 100 billboard. There seems to be an interesting dip where new songs grew stagnant between 1975-2015, I wonder if this says more about the diversity of music before and after, or if it was due to an industry slump or some other phenomenon.
+
+```{r echo=FALSE}
+best_artists = billboard %>% 
+  group_by(performer, song) %>% 
+  summarize(total_weeks = n()) %>% 
+  filter(total_weeks >= 10) %>% 
+  summarize(big_hitters = n()) %>% 
+  filter(big_hitters >= 30)
+
+best_artists %>% 
+  ggplot() + geom_col(aes(x=performer, y=big_hitters), fill='orchid') + coord_flip() + labs(title='Musical Artists With 30+ "Ten Week Wonders"', y="Ten Week Wonders")
+```
+
+This graph shows the artists who have released thirty or more songs that have been on the billboard top charts for ten days or more. There are only nineteen total artists which show that it is extremely hard to attain, however, Elton John stands far above the rest with fifty-four "ten week wonders."
